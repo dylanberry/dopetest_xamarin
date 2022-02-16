@@ -3,4 +3,6 @@
 	<uses-sdk android:minSdkVersion="19" android:targetSdkVersion="29" />
 	<application android:label="dopetest_xamarin.Android" android:theme="@style/MainTheme"></application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
 </manifest>

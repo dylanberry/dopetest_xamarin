@@ -43,6 +43,9 @@
         <!--<Button x:Name="startMT"
             Text="@ MT" BackgroundColor="Blue"
             Clicked="startMT_Clicked"/>-->
+        <Button x:Name="startAll"
+            Text="All" BackgroundColor="Green"
+            Clicked="startAll_Clicked"/>
         <Button x:Name="startST"
             Text="@ Build" BackgroundColor="Blue"
             Clicked="startST_Clicked"/>

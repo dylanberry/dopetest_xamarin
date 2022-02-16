@@ -1,6 +1,7 @@
 ﻿using Android.App;
 using Android.Content.PM;
 using Android.OS;
+using Android.Views;
 
 namespace dopetest_xamarin.Droid
 {
@@ -16,6 +17,7 @@ namespace dopetest_xamarin.Droid
 
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
             LoadApplication(new App());
+            Window.AddFlags(WindowManagerFlags.KeepScreenOn);
         }
 
     }

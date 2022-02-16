@@ -1,8 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
+using Newtonsoft.Json;
 using Saplin.xOPS.UI.Misc;
 using Xamarin.Forms;
 
@@ -501,6 +505,65 @@ namespace dopetest_xamarin
             startChangeST.IsVisible = startST.IsVisible = startGridST.IsVisible = true;
         }
 
+        private async void startAll_Clicked(object sender, EventArgs e)
+        {
+            int testLengthMs = 30000;
+            int pauseLengthMs = 100;
 
+            startST_Clicked(default, default);
+            await Task.Delay(testLengthMs);
+            Stop_Clicked(default, default);
+            await Task.Delay(pauseLengthMs);
+            _ = Decimal.TryParse(dopes.Text.Replace(" Dopes/s (AVG)", "").Trim(), out var resultST);
+
+            startChangeST_Clicked(default, default);
+            await Task.Delay(testLengthMs);
+            Stop_Clicked(default, default);
+            await Task.Delay(pauseLengthMs);
+            _ = Decimal.TryParse(dopes.Text.Replace(" Dopes/s (AVG)", "").Trim(), out var resultChangeST);
+
+            startGridST_Clicked(default, default);
+            await Task.Delay(testLengthMs);
+            Stop_Clicked(default, default);
+            await Task.Delay(pauseLengthMs);
+            _ = Decimal.TryParse(dopes.Text.Replace(" Dopes/s (AVG)", "").Trim(), out var resultGridST);
+
+            var platformVersion = "Xamarin Forms 5.0.0.2337";
+
+#if __ANDROID__
+            var operatingSystem = "Android";
+#elif __IOS__
+            var operatingSystem = "iOS";
+#elif __MACOS__
+            var operatingSystem = "macOS";
+#elif WINDOWS_UWP
+        var operatingSystem = "UWP";
+#else
+            var operatingSystem = "Unknown";
+#endif
+
+            var results = new { OS = operatingSystem, Platform = platformVersion, Build = resultST, Change = resultChangeST, Reuse = 0, Grid = resultGridST };
+            string jsonString = JsonConvert.SerializeObject(results);
+
+            Console.WriteLine(jsonString);
+
+            try
+            {
+                var client = new BlobServiceClient(Config.StorageConnectionString);
+                var blobContainerClient = client.GetBlobContainerClient("results");
+                await blobContainerClient.CreateIfNotExistsAsync();
+
+                var filename = $"{operatingSystem}-{platformVersion}-{DateTime.UtcNow.ToString("yyyy-MM-dd-hh-mm-ss")}.json";
+
+                using (MemoryStream memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(jsonString)))
+                    await blobContainerClient.UploadBlobAsync(filename, memoryStream);
+
+                Console.WriteLine("Uploaded.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
     }
 }
