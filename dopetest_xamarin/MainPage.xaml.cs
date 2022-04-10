@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Storage.Blobs;
 using Newtonsoft.Json;
 using Saplin.xOPS.UI.Misc;
@@ -549,7 +550,7 @@ namespace dopetest_xamarin
 
             try
             {
-                var client = new BlobServiceClient(Config.StorageConnectionString);
+                var client = new BlobServiceClient(new Uri(Config.StorageUrl), new AzureSasCredential(Config.StorageSasToken));
                 var blobContainerClient = client.GetBlobContainerClient("results");
                 await blobContainerClient.CreateIfNotExistsAsync();
 
