@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Storage.Blobs;
 using Newtonsoft.Json;
 using Saplin.xOPS.UI.Misc;
@@ -419,22 +420,24 @@ namespace dopetest_xamarin
                 //60hz, 16ms to build the frame
                 while (sw.ElapsedMilliseconds - now < 16)
                 {
-
-                    var label = new Label()
-                    {
-                        Text = "Dope",
-                        TextColor = new Color(rand.NextDouble(), rand.NextDouble(), rand.NextDouble()),
-                        Rotation = rand.NextDouble() * 360
-                    };
-
-                    AbsoluteLayout.SetLayoutFlags(label, AbsoluteLayoutFlags.PositionProportional);
-                    AbsoluteLayout.SetLayoutBounds(label, new Rectangle(rand.NextDouble(), rand.NextDouble(), 80, 24));
-
                     if (processed > max)
                     {
                         (absolute.Children[processed % max] as Label).Text = texts[(int)Math.Floor(rand.NextDouble() * 4)];
                     }
-                    else absolute.Children.Add(label);
+                    else
+                    {
+                        var label = new Label()
+                        {
+                            Text = "Dope",
+                            TextColor = new Color(rand.NextDouble(), rand.NextDouble(), rand.NextDouble()),
+                            Rotation = rand.NextDouble() * 360
+                        };
+
+                        AbsoluteLayout.SetLayoutFlags(label, AbsoluteLayoutFlags.PositionProportional);
+                        AbsoluteLayout.SetLayoutBounds(label, new Rectangle(rand.NextDouble(), rand.NextDouble(), 80, 24));
+
+                        absolute.Children.Add(label);
+                    }
 
                     processed++;
 
@@ -507,7 +510,7 @@ namespace dopetest_xamarin
 
         private async void startAll_Clicked(object sender, EventArgs e)
         {
-            int testLengthMs = 30000;
+            int testLengthMs = 60000;
             int pauseLengthMs = 100;
 
             startST_Clicked(default, default);
@@ -522,11 +525,11 @@ namespace dopetest_xamarin
             await Task.Delay(pauseLengthMs);
             _ = Decimal.TryParse(dopes.Text.Replace(" Dopes/s (AVG)", "").Trim(), out var resultChangeST);
 
-            startGridST_Clicked(default, default);
-            await Task.Delay(testLengthMs);
-            Stop_Clicked(default, default);
-            await Task.Delay(pauseLengthMs);
-            _ = Decimal.TryParse(dopes.Text.Replace(" Dopes/s (AVG)", "").Trim(), out var resultGridST);
+            //startGridST_Clicked(default, default);
+            //await Task.Delay(testLengthMs);
+            //Stop_Clicked(default, default);
+            //await Task.Delay(pauseLengthMs);
+            //_ = Decimal.TryParse(dopes.Text.Replace(" Dopes/s (AVG)", "").Trim(), out var resultGridST);
 
             var platformVersion = "Xamarin Forms 5.0.0.2337";
 
@@ -542,14 +545,16 @@ namespace dopetest_xamarin
             var operatingSystem = "Unknown";
 #endif
 
-            var results = new { OS = operatingSystem, Platform = platformVersion, Build = resultST, Change = resultChangeST, Reuse = 0, Grid = resultGridST };
+            var results = new { OS = operatingSystem, Platform = platformVersion, Build = resultST, Change = resultChangeST, Reuse = 0, Grid = 0 };
             string jsonString = JsonConvert.SerializeObject(results);
 
+        dopes.Text = $"Build: {results.Build}; Change: {results.Change}";
             Console.WriteLine(jsonString);
 
+#if !DEBUG
             try
             {
-                var client = new BlobServiceClient(Config.StorageConnectionString);
+            var client = new BlobServiceClient(new Uri(Config.StorageUrl), new AzureSasCredential(Config.StorageSasToken));
                 var blobContainerClient = client.GetBlobContainerClient("results");
                 await blobContainerClient.CreateIfNotExistsAsync();
 
@@ -564,6 +569,8 @@ namespace dopetest_xamarin
             {
                 Console.WriteLine(ex);
             }
+#endif
         }
     }
 }
+
