@@ -554,7 +554,7 @@ namespace dopetest_xamarin
 #if !DEBUG
             try
             {
-            var client = new BlobServiceClient(new Uri(Config.StorageUrl), new AzureSasCredential(Config.StorageSasToken));
+                var client = new BlobServiceClient(new Uri(Config.StorageUrl), new AzureSasCredential(Config.StorageSasToken));
                 var blobContainerClient = client.GetBlobContainerClient("results");
                 await blobContainerClient.CreateIfNotExistsAsync();
 
